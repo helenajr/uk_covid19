@@ -3,7 +3,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 #### UKGov confirmed cases ####
-cases <- read.csv("~/Desktop/Coronavirus briefings/2020-07-31/data_2020-Jul-31.csv")
+cases <- read.csv("~/Desktop/uk_covid19/2020-07-31/data_2020-Jul-31.csv")
 View(cases)
 
 #Latest total and total 1 week ago
@@ -16,7 +16,7 @@ sum(cases[(1:7),5])
 sum(cases[(8:14),5])
 
 ####Local welsh cases####
-w_cases <- read.csv("~/Desktop/Coronavirus briefings/2020-07-31/Rapid COVID-19 surveillance data-8.csv", header=TRUE)
+w_cases <- read.csv("~/Desktop/uk_covid19/2020-07-31/Rapid COVID-19 surveillance data-8.csv", header=TRUE)
 w_cases$Specimen.date <- 
   as.Date(w_cases$Specimen.date, format = "%d/%m/%Y")
 str(w_cases)
@@ -66,14 +66,30 @@ previous_a + previous_g + previous_c
 newdf2 <- data.frame("Specimen date" = c_cases$Specimen.date[6:157],
                     "Conwy" = c_cases$Cases..new.[6:157],
                     "Anglesey" = a_cases$Cases..new.[6:157],
-                    "Gwynedd" = g_cases$Cases..new.[6:157])
+                    "Gwynedd" = g_cases$Cases..new.[6:157],
+                    "Conwy_episodes" = c_cases$Testing.episodes..new.[6:157],
+                    "Anglesey_episodes" = a_cases$Testing.episodes..new.[6:157],
+                    "Gwynedd_episodes" = g_cases$Testing.episodes..new.[6:157])
 library(ggthemes)
 library(zoo)
+#Add mutated vectors for AGC totals and rollmeans#
 newdf2 <- newdf2 %>% 
   mutate("AGC" = (Conwy+Anglesey+Gwynedd))
 newdf2 <- newdf2 %>% 
   mutate("roll_mean" = rollmean(AGC, 7, fill = NA))
+newdf2 <- newdf2 %>% 
+  mutate("AGC_episodes" = (Conwy_episodes +
+                             Anglesey_episodes+
+                             Gwynedd_episodes))
+newdf2 <- newdf2 %>% 
+  mutate("roll_mean_episodes" = rollmean(AGC_episodes, 7, fill = NA))
+newdf2 <- newdf2 %>% 
+  mutate("Per_Positivity" = ((AGC/AGC_episodes)*100))
+newdf2 <- newdf2 %>% 
+  mutate("roll_mean_positivity" = rollmean(Per_Positivity, 7, fill = NA))
 View(newdf2)
+
+
 agc_plot <- ggplot(data = newdf2, aes(x=Specimen.date, y=AGC))+
   geom_bar(stat="identity", fill="steelblue", color = "steelblue",
            width = 0.6)+
@@ -85,7 +101,30 @@ agc_plot <- ggplot(data = newdf2, aes(x=Specimen.date, y=AGC))+
   ggtitle("Local cases by specimen date")
 
 agc_plot
+#Corresponding plot for testing episodes#
+agc_episodes_plot <- ggplot(data = newdf2, aes(x=Specimen.date, y=AGC_episodes))+
+  geom_bar(stat="identity", fill="steelblue", color = "steelblue",
+           width = 0.6)+
+  labs(x = "Episode date",
+       y = "Anglesey/Gwynedd/Conwy")+
+  geom_line(data = newdf2, aes(x=Specimen.date, y=roll_mean_episodes), 
+            color = "royalblue4",
+            size = 1)+
+  ggtitle("Testing episodes by date")
 
+agc_episodes_plot
+#Plot for test positivity
+agc_positivity <- ggplot(data = newdf2, aes(x=Specimen.date, y= Per_Positivity))+
+  geom_bar(stat="identity", fill="steelblue", color = "steelblue",
+           width = 0.6)+
+  labs(x = "Episode date",
+       y = "Anglesey/Gwynedd/Conwy")+
+  geom_line(data = newdf2, aes(x=Specimen.date, y=roll_mean_positivity), 
+            color = "royalblue4",
+            size = 1)+
+  ggtitle("Test % Positivity by date")
+
+agc_positivity
 ####Zoe app####
 (464+852+287)/3
 (534.3333/1000000)*311200
