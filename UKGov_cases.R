@@ -16,7 +16,7 @@ sum(cases[(1:7),5])
 sum(cases[(8:14),5])
 
 ####Local welsh cases####
-w_cases <- read.csv("~/Desktop/uk_covid19/2020-07-31/Rapid COVID-19 surveillance data-8.csv", header=TRUE)
+w_cases <- read.csv("~/Desktop/uk_covid19/2020-08-07/Rapid COVID-19 surveillance data-8.csv", header=TRUE)
 w_cases$Specimen.date <- 
   as.Date(w_cases$Specimen.date, format = "%d/%m/%Y")
 str(w_cases)
