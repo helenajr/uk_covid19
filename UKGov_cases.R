@@ -126,9 +126,9 @@ agc_positivity <- ggplot(data = newdf2, aes(x=Specimen.date, y= Per_Positivity))
 
 agc_positivity
 ####Zoe app####
-(464+852+287)/3
-(534.3333/1000000)*311200
-311200/166.2845
+(0+862+242)/3
+(368/1000000)*311200
+311200/114.5216
 
 ####ONS####
 ONS <- read.csv("~/Desktop/Coronavirus briefings/ons_infections.csv")
